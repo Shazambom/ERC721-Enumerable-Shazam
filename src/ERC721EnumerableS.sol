@@ -24,7 +24,7 @@ import "openzeppelin-contracts/contracts/token/ERC721/extensions/IERC721Enumerab
 abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
 
     //Map that represents the gaps in the ID space
-    uint64[] private _bitmap;
+    uint256[] private _bitmap;
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -67,9 +67,9 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
      */
     function tokenByIndex(uint256 index) public view virtual override returns (uint256) {
         require(index < ERC721Enumerable.totalSupply(), "ERC721Enumerable: global index out of bounds");
-        uint256[] blocks;
+        uint256[] memory blocks;
         for (uint256 i = 0; i < _bitmap.length; i++) {
-            blocks.push(countSetBits(_bitmap[i]));
+            blocks[i] = countSetBits(_bitmap[i]);
         }
         uint256 counter = index;
         uint256 bitmapIndex;
