@@ -7,13 +7,13 @@ import "openzeppelin-contracts/contracts/token/ERC721/extensions/IERC721Enumerab
 
 
 /**
- * Theory on how to implement this with less memory:
+ * Theory on how to implement this with less memory & thus less gas:
  * 
  * If we have a bitmap that represents all minted IDs we can iterate over the bit representation and the token space
  * Using this we can ensure that tokenID == index for our iteration
  * 
  * Abuse the fact that all functions in the interface are "view" functions and don't require gas to call.
- * This should significantly reduce the gas cost of this extension
+ * This should significantly reduce the gas cost of this extension when minting or transfering an ERC-721 token
  */
 
 /**
@@ -21,7 +21,7 @@ import "openzeppelin-contracts/contracts/token/ERC721/extensions/IERC721Enumerab
  * enumerability of all the token ids in the contract as well as all token ids owned by each
  * account.
  */
-abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
+abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
 
     //Map that represents the gaps in the ID space
     uint256[] private _bitmap;
@@ -42,10 +42,10 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
         for (uint256 i = 0; i < _bitmap.length << 8; i++) {
             uint256 mask = 1 << uint8(i);
             if (mask & _bitmap[i >> 8] != 0 && ERC721.ownerOf(i) == owner) {
-                count++;
                 if (count == index) {
                     return i;
                 }
+                count++;
             }
         }
         revert("ERC721EnumerableS: Unable to find token");
@@ -66,7 +66,7 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
      * @dev See {IERC721Enumerable-tokenByIndex}.
      */
     function tokenByIndex(uint256 index) public view virtual override returns (uint256) {
-        require(index < ERC721Enumerable.totalSupply(), "ERC721Enumerable: global index out of bounds");
+        require(index < ERC721EnumerableS.totalSupply(), "ERC721Enumerable: global index out of bounds");
         uint256[] memory blocks;
         for (uint256 i = 0; i < _bitmap.length; i++) {
             blocks[i] = countSetBits(_bitmap[i]);
@@ -145,7 +145,7 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
      * @param tokenId uint256 ID of the token to be added to the tokens list
      */
     function _addTokenToAllTokensEnumeration(uint256 tokenId) private {
-        while(tokenId >> 8 > _bitmap.length) {
+        while(tokenId >> 8 >= _bitmap.length) {
             _bitmap.push(0);
         }
         uint8 pos = uint8(tokenId);
@@ -163,7 +163,7 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
         uint8 pos = uint8(tokenId);
         uint256 index = tokenId >> 8;
         uint256 mask = 1 << pos;
-        mask = mask ^ 0xffffffffffffffff;
+        mask = mask ^ 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         _bitmap[index] = _bitmap[index] & mask;
     }
 }
