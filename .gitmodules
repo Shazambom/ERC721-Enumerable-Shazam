@@ -1,3 +1,6 @@
 [submodule "ERC721-Enumerable-Shazam/lib/ds-test"]
 	path = ERC721-Enumerable-Shazam/lib/ds-test
 	url = https://github.com/dapphub/ds-test
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
