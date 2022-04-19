@@ -41,18 +41,7 @@ contract ERC721EnumerableSTest is DSTest, IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
-    function testMintOne() public {
-        bitBoi.mint(msg.sender, 0);
-        assertEq(bitBoi.totalSupply(), 1);
-    }
-    function testMintTree() public {
-        bitBoi.mint(msg.sender, 0);
-        bitBoi.mint(msg.sender, 1);
-        bitBoi.mint(msg.sender, 2);
-        assertEq(bitBoi.totalSupply(), 3);
-    }
-
-    function testMint512() public {
+    function testTotalSupply() public {
         for (uint256 i = 0; i < 512; i++) {
             bitBoi.mint(msg.sender, i);
         }
@@ -94,7 +83,7 @@ contract ERC721EnumerableSTest is DSTest, IERC721Receiver {
         assertEq(bitBoi.tokenOfOwnerByIndex(msg.sender, 15), 8903);
     }
 
-    function testMint16Skipping() public {
+    function testTotalSupplySkipping() public {
         for (uint256 i = 0; i < 8; i++) {
             bitBoi.mint(msg.sender, i);
         }
@@ -157,7 +146,48 @@ contract ERC721EnumerableSTest is DSTest, IERC721Receiver {
         assertEq(bitBoi.tokenByIndex(1), 2);
         assertEq(bitBoi.tokenOfOwnerByIndex(address(this), 0), 0);
         assertEq(bitBoi.tokenOfOwnerByIndex(address(this), 1), 2);
+    }
 
+    function testGasMintingOne() public {
+        bitBoi.mint(msg.sender, 0);
+    }
+    function testGasMintingFive() public {
+        for (uint256 i = 0; i < 5; i++) {
+            bitBoi.mint(msg.sender, i);
+        }
+    }
+    function testGasMinting5k() public {
+        for (uint256 i = 0; i < 5000; i++) {
+            bitBoi.mint(msg.sender, i);
+        }
+    }
+    function testGasMinting10k() public {
+        for (uint256 i = 0; i < 10000; i++) {
+            bitBoi.mint(msg.sender, i);
+        }
+    }
+    function testGasMintingOne_HighIndex() public {
+        bitBoi.mint(msg.sender, 10000);
+    }
+    function testGasTotalSupply() public {
+        bitBoi.mint(msg.sender, 0);
+        bitBoi.totalSupply();
+    }
+    function testGasTokenByIndex() public {
+        bitBoi.mint(msg.sender, 0);
+        bitBoi.tokenByIndex(0);
+    }
+    function testGasTokenByIndex_HighIndex() public {
+        bitBoi.mint(msg.sender, 10000);
+        bitBoi.tokenByIndex(0);
+    }
+    function testGasTokenOfOwnerByIndex() public {
+        bitBoi.mint(msg.sender, 0);
+        bitBoi.tokenOfOwnerByIndex(msg.sender, 0);
+    }
+    function testGasTokenOfOwnerByIndex_HighIndex() public {
+        bitBoi.mint(msg.sender, 10000);
+        bitBoi.tokenOfOwnerByIndex(msg.sender, 0);
     }
 }
 
