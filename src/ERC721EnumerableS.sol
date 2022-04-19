@@ -93,7 +93,7 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
             if (acc & 1 == 1) {
                 if (counter == 0) {
                     if (region > 0) {
-                        return (region * 256) + i;
+                        return (region << 8) + i;
                     }
                     else {
                         return i;
