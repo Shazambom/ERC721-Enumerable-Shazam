@@ -23,7 +23,7 @@ import "openzeppelin-contracts/contracts/token/ERC721/extensions/IERC721Enumerab
  */
 abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
 
-    //Map that represents the gaps in the ID space
+    //BitMap that represents each minted token in binary
     uint256[] private _bitmap;
 
     /**
@@ -67,28 +67,41 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
      */
     function tokenByIndex(uint256 index) public view virtual override returns (uint256) {
         require(index < ERC721EnumerableS.totalSupply(), "ERC721Enumerable: global index out of bounds");
-        uint256[] memory blocks;
+    
+        uint256[] memory blocks = new uint256[](_bitmap.length);
         for (uint256 i = 0; i < _bitmap.length; i++) {
             blocks[i] = countSetBits(_bitmap[i]);
         }
         uint256 counter = index;
-        uint256 bitmapIndex;
+        uint256 bitmapIndex = 0;
         for (uint256 i = 0; i < blocks.length; i++) {
-            if (blocks[i] < counter) {
+            if (blocks[i] <= counter) {
                 counter -= blocks[i];
             } else {
                 bitmapIndex = i;
                 break;
             }
         }
+        return searchMaskForToken(counter, bitmapIndex);
+    }
+
+
+    function searchMaskForToken(uint256 index, uint256 region) internal view returns (uint256) {
+        uint256 counter = index;
+        uint256 acc = _bitmap[region];
         for (uint256 i = 0; i < 256; i++) {
-            uint256 mask = 1 << uint8(i);
-            if (mask & _bitmap[bitmapIndex] != 0) {
-                counter--;
+            if (acc & 1 == 1) {
                 if (counter == 0) {
-                    return (1 << bitmapIndex ) + i;
+                    if (region > 0) {
+                        return (region * 256) + i;
+                    }
+                    else {
+                        return i;
+                    }
                 }
+                counter--;
             }
+            acc = acc >> 1;
         }
         revert("ERC721EnumerableS: Unable to find token by index");
     }

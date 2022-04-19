@@ -99,38 +99,46 @@ contract ERC721EnumerableSTest is DSTest {
         assertEq(bitBoi.totalSupply(), 16);
     }
 
-    // function testTokenByIndex() public {
-    //     for (uint256 i = 0; i < 4; i++) {
-    //         bitBoi.mint(msg.sender, i);
-    //     }
-    //     for (uint256 i = 0; i < 4; i++) {
-    //         bitBoi.mint(msg.sender, i + 64);
-    //     }
-    //     for (uint256 i = 0; i < 4; i++) {
-    //         bitBoi.mint(msg.sender, i + 8900);
-    //     }
-    //     for (uint256 i = 0; i < 4; i++) {
-    //         bitBoi.mint(msg.sender, i + 512);
-    //     }
-    //     assertEq(bitBoi.totalSupply(), 16);
+    function testTokenByIndex() public {
+        for (uint256 i = 0; i < 4; i++) {
+            bitBoi.mint(msg.sender, i);
+        }
+        for (uint256 i = 0; i < 4; i++) {
+            bitBoi.mint(msg.sender, i + 64);
+        }
+        for (uint256 i = 0; i < 4; i++) {
+            bitBoi.mint(msg.sender, i + 8900);
+        }
+        for (uint256 i = 0; i < 5; i++) {
+            bitBoi.mint(msg.sender, i + 511);
+        }
+        bitBoi.mint(msg.sender, 255);
+        bitBoi.mint(msg.sender, 256);
+        bitBoi.mint(msg.sender, 257);
+    
+        assertEq(bitBoi.totalSupply(), 20);
 
-    //     assertEq(bitBoi.tokenByIndex(0), 0);
-    //     assertEq(bitBoi.tokenByIndex(1), 1);
-    //     assertEq(bitBoi.tokenByIndex(2), 2);
-    //     assertEq(bitBoi.tokenByIndex(3), 3);
-    //     assertEq(bitBoi.tokenByIndex(4), 64);
-    //     assertEq(bitBoi.tokenByIndex(5), 65);
-    //     assertEq(bitBoi.tokenByIndex(6), 66);
-    //     assertEq(bitBoi.tokenByIndex(7), 67);
-    //     assertEq(bitBoi.tokenByIndex(8), 512);
-    //     assertEq(bitBoi.tokenByIndex(9), 513);
-    //     assertEq(bitBoi.tokenByIndex(10), 514);
-    //     assertEq(bitBoi.tokenByIndex(11), 516);
-    //     assertEq(bitBoi.tokenByIndex(12), 8900);
-    //     assertEq(bitBoi.tokenByIndex(13), 8901);
-    //     assertEq(bitBoi.tokenByIndex(14), 8902);
-    //     assertEq(bitBoi.tokenByIndex(15), 8903);
+        assertEq(bitBoi.tokenByIndex(0), 0);
+        assertEq(bitBoi.tokenByIndex(1), 1);
+        assertEq(bitBoi.tokenByIndex(2), 2);
+        assertEq(bitBoi.tokenByIndex(3), 3);
+        assertEq(bitBoi.tokenByIndex(4), 64);
+        assertEq(bitBoi.tokenByIndex(5), 65);
+        assertEq(bitBoi.tokenByIndex(6), 66);
+        assertEq(bitBoi.tokenByIndex(7), 67);
+        assertEq(bitBoi.tokenByIndex(8), 255);
+        assertEq(bitBoi.tokenByIndex(9), 256);
+        assertEq(bitBoi.tokenByIndex(10), 257);
+        assertEq(bitBoi.tokenByIndex(11), 511);
+        assertEq(bitBoi.tokenByIndex(12), 512);
+        assertEq(bitBoi.tokenByIndex(13), 513);
+        assertEq(bitBoi.tokenByIndex(14), 514);
+        assertEq(bitBoi.tokenByIndex(15), 515);
+        assertEq(bitBoi.tokenByIndex(16), 8900);
+        assertEq(bitBoi.tokenByIndex(17), 8901);
+        assertEq(bitBoi.tokenByIndex(18), 8902);
+        assertEq(bitBoi.tokenByIndex(19), 8903);
         
-    // }
+    }
 }
 
