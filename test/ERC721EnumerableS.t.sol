@@ -6,7 +6,7 @@ import "../src/ERC721EnumerableS.sol";
 import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
 
-contract ImplementedEnumerable is ERC721, ERC721Burnable, ERC721EnumerableS  {
+contract ImplementedEnumerableS is ERC721, ERC721Burnable, ERC721EnumerableS  {
     constructor(
         string memory _name,
         string memory _symbol
@@ -30,10 +30,10 @@ contract ImplementedEnumerable is ERC721, ERC721Burnable, ERC721EnumerableS  {
 }
 
 contract ERC721EnumerableSTest is DSTest {
-    ImplementedEnumerable bitBoi;
+    ImplementedEnumerableS bitBoi;
 
     function setUp() public {
-        bitBoi = new ImplementedEnumerable("bit", "boi");
+        bitBoi = new ImplementedEnumerableS("bit", "boi");
     }
 
     function testMintOne() public {
@@ -140,5 +140,14 @@ contract ERC721EnumerableSTest is DSTest {
         assertEq(bitBoi.tokenByIndex(19), 8903);
         
     }
+
+    // function testBurning() public {
+    //     bitBoi.mint(msg.sender, 0);
+    //     bitBoi.mint(msg.sender, 1);
+    //     bitBoi.mint(msg.sender, 2);
+    //     assertEq(bitBoi.totalSupply(), 3);
+    //     bitBoi.burn(2, {sender: msg.sender});
+    //     assertEq(bitBoi.totalSupply(), 2);
+    // }
 }
 
