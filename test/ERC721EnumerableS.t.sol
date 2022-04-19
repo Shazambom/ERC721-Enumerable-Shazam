@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "ds-test/test.sol";
 import "../src/ERC721EnumerableS.sol";
 import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol";
 
 
 contract ImplementedEnumerableS is ERC721, ERC721Burnable, ERC721EnumerableS  {
@@ -29,11 +30,15 @@ contract ImplementedEnumerableS is ERC721, ERC721Burnable, ERC721EnumerableS  {
 
 }
 
-contract ERC721EnumerableSTest is DSTest {
+contract ERC721EnumerableSTest is DSTest, IERC721Receiver {
     ImplementedEnumerableS bitBoi;
 
     function setUp() public {
         bitBoi = new ImplementedEnumerableS("bit", "boi");
+    }
+
+    function onERC721Received(address, address, uint256, bytes calldata) external pure override returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 
     function testMintOne() public {
@@ -141,13 +146,18 @@ contract ERC721EnumerableSTest is DSTest {
         
     }
 
-    // function testBurning() public {
-    //     bitBoi.mint(msg.sender, 0);
-    //     bitBoi.mint(msg.sender, 1);
-    //     bitBoi.mint(msg.sender, 2);
-    //     assertEq(bitBoi.totalSupply(), 3);
-    //     bitBoi.burn(2, {sender: msg.sender});
-    //     assertEq(bitBoi.totalSupply(), 2);
-    // }
+    function testBurning() public {
+        bitBoi.mint(address(this), 0);
+        bitBoi.mint(address(this), 1);
+        bitBoi.mint(address(this), 2);
+        assertEq(bitBoi.totalSupply(), 3);
+        bitBoi.burn(1);
+        assertEq(bitBoi.totalSupply(), 2);
+        assertEq(bitBoi.tokenByIndex(0), 0);
+        assertEq(bitBoi.tokenByIndex(1), 2);
+        assertEq(bitBoi.tokenOfOwnerByIndex(address(this), 0), 0);
+        assertEq(bitBoi.tokenOfOwnerByIndex(address(this), 1), 2);
+
+    }
 }
 
