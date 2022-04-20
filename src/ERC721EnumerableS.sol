@@ -27,9 +27,10 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
     uint256[] private _bitmap;
     uint16[] private _counter;
 
-    mapping(uint256 => uint8) public lookupTable;
+    mapping(uint256 => uint16) public lookupTable;
 
     constructor() {
+        lookupTable[uint256(0)] = 256;
         lookupTable[uint256(1)] = 0;
         lookupTable[uint256(2)] = 1;
         lookupTable[uint256(4)] = 2;
@@ -301,14 +302,19 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
     function tokenOfOwnerByIndex(address owner, uint256 index) public view virtual override returns (uint256) {
         require(index < ERC721.balanceOf(owner), "ERC721Enumerable: owner index out of bounds");
         uint256 count = 0;
-        // for (uint256 i = 0; i < _bitmap.length << 8; i += getNextIndexIncrement(_bitmap[i >> 8] >> uint8(i)) + 1) {
-        for (uint256 i = 0; i < _bitmap.length << 8; i++) {
+        for (uint256 i = getNextIndexIncrement(_bitmap[0]); i < _bitmap.length << 8; i++) {
             uint256 mask = 1 << uint8(i);
-            if (mask & _bitmap[i >> 8] != 0 && ERC721.ownerOf(i) == owner) {
+            uint256 region = i >> 8;
+            if (mask & _bitmap[region] != 0 && ERC721.ownerOf(i) == owner) {
                 if (count == index) {
                     return i;
                 }
                 count++;
+            }
+            if (region + 1 < _bitmap.length) {
+                i += getNextIndexIncrement(combineBitMaps(_bitmap[region], _bitmap[region + 1], uint16(uint8(i)) + 1));
+            } else {
+                i += getNextIndexIncrement(_bitmap[region] >> (uint16(uint8(i)) + 1));
             }
         }
         revert("ERC721EnumerableS: Unable to find token");
@@ -319,8 +325,8 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
      */
     function totalSupply() public view virtual override returns (uint256) {
         uint256 sum = 0;
-        for (uint256 i = 0; i < _bitmap.length; i++) {
-           sum += countSetBits(_bitmap[i]);
+        for (uint256 i = 0; i < _counter.length; i++) {
+           sum += _counter[i];
         }
         return sum;
     }
@@ -328,62 +334,52 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
     /**
      * @dev See {IERC721Enumerable-tokenByIndex}.
      */
-    function tokenByIndex(uint256 index) public view virtual override returns (uint256) {
+     function tokenByIndex(uint256 index) public view virtual override returns (uint256) {
         require(index < ERC721EnumerableS.totalSupply(), "ERC721Enumerable: global index out of bounds");
-    
-        uint256 counter = index;
-        uint256 bitmapIndex = 0;
-        for (uint256 i = 0; i < _bitmap.length; i++) {
-            uint16 total = _counter[i];
-            if (total <= counter) {
-                counter -= total;
+        uint256 count = 0;
+        for (uint256 i = getNextIndexIncrement(_bitmap[0]); i < _bitmap.length << 8; i++) {
+            uint256 mask = 1 << uint8(i);
+            uint256 region = i >> 8;
+            if (mask & _bitmap[region] != 0) {
+                if (count == index) {
+                    return i;
+                }
+                count++;
+            }
+            if (region + 1 < _bitmap.length) {
+                i += getNextIndexIncrement(combineBitMaps(_bitmap[region], _bitmap[region + 1], uint16(uint8(i)) + 1));
             } else {
-                bitmapIndex = i;
-                break;
+                i += getNextIndexIncrement(_bitmap[region] >> (uint16(uint8(i)) + 1));
             }
         }
-        return searchMaskForToken(counter, bitmapIndex);
-    }
+        revert("ERC721EnumerableS: Unable to find token");
+     }
 
     function searchMaskForToken(uint256 index, uint256 region) internal view returns (uint256) {
         uint256 counter = index;
         uint256 acc = _bitmap[region];
-        for (uint256 i = 0; i < 256; i += getNextIndexIncrement(acc >> 1) + 1) {
+        for (uint256 i = getNextIndexIncrement(acc); i < 256; i += getNextIndexIncrement(acc >> 1) + 1) {
             acc = _bitmap[region] >> i;
-            if (acc & 1 == 1) {
-                if (counter == 0) {
-                    return (region << 8) + i;
-                }
-                counter--;
+            if (counter == 0) {
+                return (region << 8) + i;
             }
+            counter--;
         }
         revert("ERC721EnumerableS: Unable to find token by index");
     }
 
-    /**
-    * @notice Counts the number of set bits (Hamming weight).
-    * @param v Bitmap.
-    * @return Number of set bits.
-    */
-   function countSetBits(uint256 v) internal pure returns (uint16) {
-        uint16 res = 0;
-        uint256 acc = v;
-        for (uint256 i = 0; i < 256; i++) {
-            if (acc & 1 == 1) res += 1;
-            acc = acc >> 1;
-        }
-        return res;
-    }
-
-    function getNextIndexIncrement(uint256 bitmask) internal view returns(uint8) {
+    function getNextIndexIncrement(uint256 bitmask) internal view returns(uint16) {
         return lookupTable[isolateLSB(bitmask)];
     }
 
     function isolateLSB(uint256 bitmask) internal pure returns(uint256) {
-        require(bitmask > 0);
         unchecked {
             return (bitmask & (0 - bitmask));
         }
+    }
+
+    function combineBitMaps(uint256 current, uint256 next, uint16 index) internal pure returns(uint256) {
+        return current >> index | next << (256 - index);
     }
 
 
