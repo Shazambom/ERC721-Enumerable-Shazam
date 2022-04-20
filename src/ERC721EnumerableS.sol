@@ -68,15 +68,12 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
     function tokenByIndex(uint256 index) public view virtual override returns (uint256) {
         require(index < ERC721EnumerableS.totalSupply(), "ERC721Enumerable: global index out of bounds");
     
-        uint256[] memory blocks = new uint256[](_bitmap.length);
-        for (uint256 i = 0; i < _bitmap.length; i++) {
-            blocks[i] = countSetBits(_bitmap[i]);
-        }
         uint256 counter = index;
         uint256 bitmapIndex = 0;
-        for (uint256 i = 0; i < blocks.length; i++) {
-            if (blocks[i] <= counter) {
-                counter -= blocks[i];
+        for (uint256 i = 0; i < _bitmap.length; i++) {
+            uint16 total = countSetBits(_bitmap[i]);
+            if (total <= counter) {
+                counter -= total;
             } else {
                 bitmapIndex = i;
                 break;
@@ -106,8 +103,8 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
     * @param v Bitmap.
     * @return Number of set bits.
     */
-   function countSetBits(uint256 v) internal pure returns (uint256) {
-        uint256 res = 0;
+   function countSetBits(uint256 v) internal pure returns (uint16) {
+        uint16 res = 0;
         uint256 acc = v;
         for (uint256 i = 0; i < 256; i++) {
             if (acc & 1 == 1) res += 1;
