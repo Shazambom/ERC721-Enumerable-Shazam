@@ -10,7 +10,7 @@ import "openzeppelin-contracts/contracts/token/ERC721/extensions/IERC721Enumerab
  * Theory on how to implement this with less memory & thus less gas:
  * 
  * If we have a bitmap that represents all minted IDs we can iterate over the bit representation and the token space
- * Using this we can ensure that tokenID == index for our iteration
+ * Using this we can ensure that tokenID == index(in the bitmap) for our iteration
  * 
  * Abuse the fact that all functions in the interface are "view" functions and don't require gas to call.
  * This should significantly reduce the gas cost of this extension when minting or transfering an ERC-721 token
@@ -25,8 +25,9 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
 
     //BitMap that represents each minted token in binary
     uint256[] private _bitmap;
+    //Counter for each region of the bitmap, keeps track of the total number of active tokens in reach region
     uint16[] private _counter;
-
+    //Lookup Table for all individual bit locations in the bitmap spots [0...255], this allows for skipping over regions in the bitmap that aren't minted
     mapping(uint256 => uint16) public lookupTable;
 
     constructor() {
@@ -354,19 +355,6 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
         }
         revert("ERC721EnumerableS: Unable to find token");
      }
-
-    function searchMaskForToken(uint256 index, uint256 region) internal view returns (uint256) {
-        uint256 counter = index;
-        uint256 acc = _bitmap[region];
-        for (uint256 i = getNextIndexIncrement(acc); i < 256; i += getNextIndexIncrement(acc >> 1) + 1) {
-            acc = _bitmap[region] >> i;
-            if (counter == 0) {
-                return (region << 8) + i;
-            }
-            counter--;
-        }
-        revert("ERC721EnumerableS: Unable to find token by index");
-    }
 
     function getNextIndexIncrement(uint256 bitmask) internal view returns(uint16) {
         return lookupTable[isolateLSB(bitmask)];
