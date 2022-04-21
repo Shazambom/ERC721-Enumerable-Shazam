@@ -288,7 +288,7 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
         lookupTable[uint256(14474011154664524427946373126085988481658748083205070504932198000989141204992)] = 253;
         lookupTable[uint256(28948022309329048855892746252171976963317496166410141009864396001978282409984)] = 254;
         lookupTable[uint256(57896044618658097711785492504343953926634992332820282019728792003956564819968)] = 255;
-}
+    }
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -357,22 +357,25 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
      }
 
     function getNextIndexIncrement(uint256 bitmask) internal view returns(uint16) {
-        //Doing the nearest first 4 bits with if statements saves on gas
-        if (bitmask & 1 == 1) return 0;
-        if (bitmask & 2 == 2) return 1; 
-        if (bitmask & 4 == 4) return 2;
-        if (bitmask & 8 == 8) return 3;
+        //Looking at the nearest first 4 bits with if statements saves on gas
+        if (bitmask & 1 != 0) return 0;
+        if (bitmask & 2 != 0) return 1; 
+        if (bitmask & 4 != 0) return 2;
+        if (bitmask & 8 != 0) return 3;
         return lookupTable[isolateLSB(bitmask)];
     }
 
     function isolateLSB(uint256 bitmask) internal pure returns(uint256) {
+        //Isolates the Least Significant Bit of a bitmask
         unchecked {
             return (bitmask & (0 - bitmask));
         }
     }
 
     function combineBitMaps(uint256 current, uint256 next, uint16 index) internal pure returns(uint256) {
-        return current >> index | next << (256 - index);
+        // Take the first few bits from the next part of the bitmap and splice it into the current bitmask 
+        // This ensure we don't skip over any regions accidentally 
+        return  next << (256 - index) | current >> index;
     }
 
 
