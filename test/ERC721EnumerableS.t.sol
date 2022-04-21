@@ -148,6 +148,39 @@ contract ERC721EnumerableSTest is DSTest, IERC721Receiver {
         assertEq(bitBoi.tokenOfOwnerByIndex(address(this), 1), 2);
     }
 
+    function testBurningMiddle() public {
+        for (uint256 i = 0; i < 1000; i++) {
+            bitBoi.mint(address(this), i);
+        }
+        for (uint256 i = 250; i < 750; i++) {
+            bitBoi.burn(i);
+        }
+        assertEq(bitBoi.totalSupply(), 500);
+        for (uint256 i = 0; i < 250; i++) {
+            assertEq(bitBoi.tokenByIndex(i), i);
+            assertEq(bitBoi.tokenOfOwnerByIndex(address(this), i), i);
+        }
+        for (uint256 i = 750; i < 1000; i++) {
+            assertEq(bitBoi.tokenByIndex(i - 500), i);
+            assertEq(bitBoi.tokenOfOwnerByIndex(address(this), i - 500), i);
+        }
+    }
+    function testBurningAlternate() public {
+        for (uint256 i = 0; i < 1000; i++) {
+            bitBoi.mint(address(this), i);
+        }
+        for (uint256 i = 0; i < 1000; i += 2) {
+            bitBoi.burn(i);
+        }
+        assertEq(bitBoi.totalSupply(), 500);
+        uint256 count = 0;
+        for (uint256 i = 1; i < 1000; i += 2) {
+            assertEq(bitBoi.tokenByIndex(count), i);
+            assertEq(bitBoi.tokenOfOwnerByIndex(address(this), count), i);
+            count++;
+        }
+    }
+
     function testGasTotalSupply() public {
         bitBoi.mint(msg.sender, 0);
         bitBoi.totalSupply();

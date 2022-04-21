@@ -436,24 +436,18 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
             _bitmap.push(0);
             _counter.push(0);
         }
-        uint8 pos = uint8(tokenId);
         uint256 index = tokenId >> 8;
-        uint256 mask = 1 << pos;
-        _bitmap[index] = _bitmap[index] | mask;
+        _bitmap[index] = _bitmap[index] | 1 << uint8(tokenId);
         _counter[index]++;
     }
 
     /**
      * @dev Private function to remove a token from this extension's token tracking data structures.
-     * This has O(1) time complexity, but alters the order of the _allTokens array.
      * @param tokenId uint256 ID of the token to be removed from the tokens list
      */
     function _removeTokenFromAllTokensEnumeration(uint256 tokenId) private {
-        uint8 pos = uint8(tokenId);
         uint256 index = tokenId >> 8;
-        uint256 mask = 1 << pos;
-        mask = mask ^ 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-        _bitmap[index] = _bitmap[index] & mask;
+        _bitmap[index] = _bitmap[index] & ((1 << uint8(tokenId)) ^ 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         _counter[index]--;
     }
 }
