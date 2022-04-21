@@ -36,27 +36,6 @@ contract ERC721EnumerableTest is DSTest {
         bitBoi = new ImplementedEnumerable("bit", "boi");
     }
 
-    function testGasMintingOne() public {
-        bitBoi.mint(msg.sender, 0);
-    }
-    function testGasMintingFive() public {
-        for (uint256 i = 0; i < 5; i++) {
-            bitBoi.mint(msg.sender, i);
-        }
-    }
-    function testGasMinting5k() public {
-        for (uint256 i = 0; i < 5000; i++) {
-            bitBoi.mint(msg.sender, i);
-        }
-    }
-    function testGasMinting10k() public {
-        for (uint256 i = 0; i < 10000; i++) {
-            bitBoi.mint(msg.sender, i);
-        }
-    }
-    function testGasMintingOne_HighIndex() public {
-        bitBoi.mint(msg.sender, 10000);
-    }
     function testGasTotalSupply() public {
         bitBoi.mint(msg.sender, 0);
         bitBoi.totalSupply();
