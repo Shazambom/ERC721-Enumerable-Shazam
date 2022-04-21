@@ -357,6 +357,11 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
      }
 
     function getNextIndexIncrement(uint256 bitmask) internal view returns(uint16) {
+        //Doing the nearest first 4 bits with if statements saves on gas
+        if (bitmask & 1 == 1) return 0;
+        if (bitmask & 2 == 2) return 1; 
+        if (bitmask & 4 == 4) return 2;
+        if (bitmask & 8 == 8) return 3;
         return lookupTable[isolateLSB(bitmask)];
     }
 
