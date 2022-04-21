@@ -84,6 +84,10 @@ contract ERC721EnumerableSTest is DSTest, IERC721Receiver {
     function testTokenByIndexMax() public {
         assertEq(bitBoi.tokenByIndex(9266), 9999);
     }
+    function testTokenOfOwnerByIndexMultiOwner() public {
+        bitBoi.mint(msg.sender, 10000);
+        assertEq(bitBoi.tokenOfOwnerByIndex(msg.sender, 0), 10000);
+    }
 
 }
 

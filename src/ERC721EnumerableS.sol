@@ -298,7 +298,8 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
     }
 
     /**
-     * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
+     * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}. DON'T CALL IN CONTRACTS THAT AREN'T VIEW FUNCTIONS. 
+     * This function is O(N) and can potentially incur high gas cost if called outside of a VIEW function.
      */
     function tokenOfOwnerByIndex(address owner, uint256 index) public view virtual override returns (uint256) {
         require(index < ERC721.balanceOf(owner), "ERC721Enumerable: owner index out of bounds");
@@ -373,7 +374,7 @@ abstract contract ERC721EnumerableS is ERC721, IERC721Enumerable {
      }
 
     function getNextIndexIncrement(uint256 bitmask) internal view returns(uint16) {
-        //Looking at the nearest 4 bits with if statements saves on gas
+        //Looking at the lowest 4 bits with if statements saves on gas
         if (bitmask & 1 != 0) return 0;
         if (bitmask & 2 != 0) return 1; 
         if (bitmask & 4 != 0) return 2;
